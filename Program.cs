@@ -1,17 +1,27 @@
-﻿void drawPixel(char sym, int colorId, int posX, int posY) {
-    Console.Write($"\x1b[38;5;{colorId}m\x1b[{posY};{posX}H{sym}");
+﻿string doColor(int r=255, int g=255, int b=255, string hex="") {
+    if (hex.Length >= 7) { 
+        hex = hex.Replace("#", "");
+        r = Convert.ToInt32($"0x{hex[0]}{hex[1]}", 16);
+        g = Convert.ToInt32($"0x{hex[2]}{hex[3]}", 16);
+        b = Convert.ToInt32($"0x{hex[4]}{hex[5]}", 16);
+    }
+    return $"\x1b[38;2;{r};{g};{b}m";
 }
 
-void drawRectangle(char sym, int colorId, int posX, int posY, int geomX, int geomY) {
+void drawPixel(char sym, string colorString, int posX, int posY) {
+    Console.Write($"{colorString}\x1b[{posY};{posX}H{sym}");
+}
+
+void drawRectangle(char sym, string colorString, int posX, int posY, int geomX, int geomY) {
     string line = new string(sym, geomX);
-    string rect = $"\x1b[38;5;{colorId}m";
+    string rect = colorString;
     for (int gy = 0; gy < geomY; gy++) {
         rect += $"\x1b[{posY+gy};{posX}H{line}";
     }
     Console.Write(rect);
 }
 
-void drawEllipse(char sym, int colorId, int posX, int posY, int radX, int radY) {
+void drawEllipse(char sym, string colorString, int posX, int posY, int radX, int radY) {
     double dx, dy, d1, d2, x, y, powRadX, powRadY;
     powRadX = radX * radX;
     powRadY = radY * radY;
@@ -21,10 +31,10 @@ void drawEllipse(char sym, int colorId, int posX, int posY, int radX, int radY) 
     dx = 2 * powRadY * x;
     dy = 2 * powRadX * y;
     while (dx < dy) {
-        drawPixel(sym, colorId, (int)(x+posX), (int)(y+posY));
-        drawPixel(sym, colorId, (int)(-x+posX), (int)(y+posY));
-        drawPixel(sym, colorId, (int)(x+posX), (int)(-y+posY));
-        drawPixel(sym, colorId, (int)(-x+posX), (int)(-y+posY));
+        drawPixel(sym, colorString, (int)(x+posX), (int)(y+posY));
+        drawPixel(sym, colorString, (int)(-x+posX), (int)(y+posY));
+        drawPixel(sym, colorString, (int)(x+posX), (int)(-y+posY));
+        drawPixel(sym, colorString, (int)(-x+posX), (int)(-y+posY));
         if (d1 < 0) {
             x++;
             dx = dx + (2 * powRadY);
@@ -40,10 +50,10 @@ void drawEllipse(char sym, int colorId, int posX, int posY, int radX, int radY) 
     }
     d2 = (powRadY * Math.Pow(x + 0.5f, 2)) - (powRadX * Math.Pow(y - 1, 2)) - (powRadX * powRadY);
     while (y >= 0) {
-        drawPixel(sym, colorId, (int)(x+posX), (int)(y+posY));
-        drawPixel(sym, colorId, (int)(-x+posX), (int)(y+posY));
-        drawPixel(sym, colorId, (int)(x+posX), (int)(-y+posY));
-        drawPixel(sym, colorId, (int)(-x+posX), (int)(-y+posY));
+        drawPixel(sym, colorString, (int)(x+posX), (int)(y+posY));
+        drawPixel(sym, colorString, (int)(-x+posX), (int)(y+posY));
+        drawPixel(sym, colorString, (int)(x+posX), (int)(-y+posY));
+        drawPixel(sym, colorString, (int)(-x+posX), (int)(-y+posY));
         if (d2 > 0) {
             y--;
             dy = dy - (2 * powRadX);
@@ -59,7 +69,7 @@ void drawEllipse(char sym, int colorId, int posX, int posY, int radX, int radY) 
     }
 }
 
-void drawLine(char sym, int colorId, int x0, int y0, int x1, int y1) {
+void drawLine(char sym, string colorString, int x0, int y0, int x1, int y1) {
     int x, y, dX, dY, error, steepY;
     bool steep;
     void Swap<T>(ref T Lhs, ref T Rhs) {
@@ -76,7 +86,7 @@ void drawLine(char sym, int colorId, int x0, int y0, int x1, int y1) {
     y = y0;
     error = dX / 2;
     for (x = x0; x <= x1; x++) {
-        drawPixel(sym, colorId, steep ? y : x, steep ? x : y);
+        drawPixel(sym, colorString, steep ? y : x, steep ? x : y);
         error -= dY;
         if (error < 0) {
             y += steepY;
@@ -86,35 +96,35 @@ void drawLine(char sym, int colorId, int x0, int y0, int x1, int y1) {
 }
 
 void showDemo(double fps = 25) {
-    int canvasX, canvasY;
+    int termX, termY;
     string clr = "\x1b[0;0m\x1b[H\x1b[2J\x1b[3J";
-    canvasX = Console.WindowWidth;
-    canvasY = Console.WindowHeight;
+    termX = Console.WindowWidth;
+    termY = Console.WindowHeight;
     while (true) {
         Console.Write(clr);
-        drawRectangle('@', 117, 0, 0, canvasX, canvasY);
-        drawRectangle('g', 40, 0, canvasY-7, canvasX, 7);
-        drawRectangle('h', 208, canvasX-23, canvasY-13, 21, 10);
-        drawRectangle('h', 208, canvasX-23, canvasY-13, 21, 10);
-        drawRectangle('d', 9, canvasX-21, canvasY-9, 5, 6);
-        drawRectangle('w', 11, canvasX-14, canvasY-10, 10, 5);
-        drawRectangle('f', 208, canvasX-10, canvasY-10, 2, 5);
-        drawRectangle('f', 208, canvasX-14, canvasY-8, 10, 1);
-        drawRectangle('h', 11, canvasX-18, canvasY-7, 1, 2);
-        drawEllipse('s', 11, 16, 7, 10, 5);
-        drawEllipse('s', 11, 16, 7, 9, 5);
-        drawEllipse('s', 11, 16, 7, 8, 5);
-        drawRectangle('s', 11, 9, 3, 15, 9);
-        drawEllipse('l', 21, 20, canvasY-4, 15, 2);
-        drawRectangle('l', 21, 6, canvasY-5, 29, 3);
-        drawLine('r', 9, canvasX-24, canvasY-12, canvasX-13, canvasY-18);
-        drawLine('r', 9, canvasX-13, canvasY-18, canvasX-2, canvasY-12);
-        drawLine('r', 9, canvasX-24, canvasY-12, canvasX-2, canvasY-12);
-        drawLine('r', 9, canvasX-21, canvasY-13, canvasX-5, canvasY-13);
-        drawLine('r', 9, canvasX-19, canvasY-14, canvasX-7, canvasY-14);
-        drawLine('r', 9, canvasX-17, canvasY-15, canvasX-9, canvasY-15);
-        drawLine('r', 9, canvasX-15, canvasY-16, canvasX-11, canvasY-16);
-        drawPixel('r', 9, canvasX-13, canvasY-17);
+        drawRectangle('@', doColor(0,0,0, "#13a2e9"), 0, 0, termX, termY);
+        drawRectangle('g', doColor(0,0,0, "#0cd205"), 0, termY-7, termX, 7);
+        drawRectangle('h', doColor(0,0,0, "#de8500"), termX-23, termY-13, 21, 10);
+        drawRectangle('h', doColor(0,0,0, "#de8500"), termX-23, termY-13, 21, 10);
+        drawRectangle('d', doColor(0,0,0, "#ff0000"), termX-21, termY-9, 5, 6);
+        drawRectangle('w', doColor(0,0,0, "#ffff00"), termX-14, termY-10, 10, 5);
+        drawRectangle('f', doColor(0,0,0, "#de8500"), termX-10, termY-10, 2, 5);
+        drawRectangle('f', doColor(0,0,0, "#de8500"), termX-14, termY-8, 10, 1);
+        drawRectangle('h', doColor(0,0,0, "#ffff00"), termX-18, termY-7, 1, 2);
+        drawEllipse  ('s', doColor(0,0,0, "#ffff00"), 16, 7, 10, 5);
+        drawEllipse  ('s', doColor(0,0,0, "#ffff00"), 16, 7, 9, 5);
+        drawEllipse  ('s', doColor(0,0,0, "#ffff00"), 16, 7, 8, 5);
+        drawRectangle('s', doColor(0,0,0, "#ffff00"), 9, 3, 15, 9);
+        drawEllipse  ('l', doColor(0,0,0, "#0000ff"), 20, termY-4, 15, 2);
+        drawRectangle('l', doColor(0,0,0, "#0000ff"), 6, termY-5, 29, 3);
+        drawLine     ('r', doColor(0,0,0, "#ff0000"), termX-24, termY-12, termX-13, termY-18);
+        drawLine     ('r', doColor(0,0,0, "#ff0000"), termX-13, termY-18, termX-2, termY-12);
+        drawLine     ('r', doColor(0,0,0, "#ff0000"), termX-24, termY-12, termX-2, termY-12);
+        drawLine     ('r', doColor(0,0,0, "#ff0000"), termX-21, termY-13, termX-5, termY-13);
+        drawLine     ('r', doColor(0,0,0, "#ff0000"), termX-19, termY-14, termX-7, termY-14);
+        drawLine     ('r', doColor(0,0,0, "#ff0000"), termX-17, termY-15, termX-9, termY-15);
+        drawLine     ('r', doColor(0,0,0, "#ff0000"), termX-15, termY-16, termX-11, termY-16);
+        drawPixel    ('r', doColor(0,0,0, "#ff0000"), termX-13, termY-17);
         Thread.Sleep((int)(1000/fps));
     }
 }

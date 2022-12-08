@@ -1,5 +1,4 @@
 ﻿void drawPixel(char sym, int colorId, int posX, int posY) {
-    Console.SetCursorPosition(posY, posX);
     Console.Write($"\x1b[38;5;{colorId}m\x1b[{posY};{posX}H{sym}");
 }
 
@@ -60,53 +59,31 @@ void drawEllipse(char sym, int colorId, int posX, int posY, int radX, int radY) 
     }
 }
 
-// void drawLine(char sym, int colorId, int x0, int y0, int x1, int y1) {
-//     double x, y, dX, dY, dDX, dDY, length;
-//     dX = x1 - x0;
-//     dY = y1 - y0;
-//     if (Math.Abs(dX) >= Math.Abs(dY)) {
-//         length = Math.Abs(dX);
-//     }
-//     else {
-//         length = Math.Abs(dY);
-//     }
-//     dDX = dX / length;
-//     dDY = dY / length;
-//     x = x0;
-//     y = y0;
-//     drawPixel(sym, colorId, (int)x, (int)y);
-//     for (int i = 0; i < length; i++) {
-//         x += dDX;
-//         y += dDY;
-//         drawPixel(sym, colorId, (int)x, (int)y);
-//     }
-// }
-
-
 void drawLine(char sym, int colorId, int x0, int y0, int x1, int y1) {
-    double dX, dY, error, error2;
-    int signX, signY;
-    dX = Math.Abs(x1 - x0);
-    dY = Math.Abs(x1 - x0);
-    signX = x0 < x1 ? 1 : -1;
-    signY = y0 < y1 ? 1 : -1;
-    error = dX - dY;
-    drawPixel(sym, colorId, (int)x1, (int)y1);
-    while (x0 != x1 && y0 != y1) {
-        drawPixel(sym, colorId, (int)x0, (int)y0);
-        error2 = error * 2;
-        if (error2 > -dY) {
-            error -= dY;
-            x0 += signX;
-        }
-        if (error2 < dX) {
+    int x, y, dX, dY, error, steepY;
+    bool steep;
+    void Swap<T>(ref T Lhs, ref T Rhs) {
+        T temp = Lhs;
+        Lhs = Rhs;
+        Rhs = temp;
+    }
+    steep = Math.Abs(y1 - y0) > Math.Abs(x1 - x0);
+    if (steep)   { Swap(ref x0, ref y0); Swap(ref x1, ref y1); }
+    if (x0 > x1) { Swap(ref x0, ref x1); Swap(ref y0, ref y1); }
+    dX = x1 - x0;
+    dY = Math.Abs(y1 - y0);
+    steepY = (y0 < y1) ? 1 : -1;
+    y = y0;
+    error = dX / 2;
+    for (x = x0; x <= x1; x++) {
+        drawPixel(sym, colorId, steep ? y : x, steep ? x : y);
+        error -= dY;
+        if (error < 0) {
+            y += steepY;
             error += dX;
-            y0 += signY;
         }
     }
 }
-
-
 
 void showDemo(double fps = 25) {
     int canvasX, canvasY;
@@ -137,8 +114,9 @@ void showDemo(double fps = 25) {
         drawLine('r', 9, canvasX-19, canvasY-14, canvasX-7, canvasY-14);
         drawLine('r', 9, canvasX-17, canvasY-15, canvasX-9, canvasY-15);
         drawLine('r', 9, canvasX-15, canvasY-16, canvasX-11, canvasY-16);
+        drawPixel('r', 9, canvasX-13, canvasY-17);
         Thread.Sleep((int)(1000/fps));
     }
 }
 
-showDemo(0.0001);
+showDemo();

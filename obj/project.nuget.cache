@@ -1,8 +1,12 @@
 {
   "version": 2,
-  "dgSpecHash": "64c1zRDBU28uACjTiI26qAeN5QKvpxhzzinWw8sRj1mUoAER1Zdxy69eCiv/CKXv0a+o+cIU0fqjRuN62Qb1gA==",
+  "dgSpecHash": "KvOZjTnE5oW8yb97mhtUmQerybDYY4lQlM6nBkGVx8I9FhaohvyRYcYOli8/832NHVpNYoNcVRJV0xuifmC61Q==",
   "success": true,
   "projectFilePath": "D:\\C#_p\\cspixpile\\cspixpile.csproj",
-  "expectedPackageFiles": [],
+  "expectedPackageFiles": [
+    "C:\\Users\\jrikt\\.nuget\\packages\\microsoft.netcore.app.runtime.linux-x64\\7.0.0\\microsoft.netcore.app.runtime.linux-x64.7.0.0.nupkg.sha512",
+    "C:\\Users\\jrikt\\.nuget\\packages\\microsoft.aspnetcore.app.runtime.linux-x64\\7.0.0\\microsoft.aspnetcore.app.runtime.linux-x64.7.0.0.nupkg.sha512",
+    "C:\\Users\\jrikt\\.nuget\\packages\\microsoft.netcore.app.host.linux-x64\\7.0.0\\microsoft.netcore.app.host.linux-x64.7.0.0.nupkg.sha512"
+  ],
   "logs": []
 }

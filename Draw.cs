@@ -1,109 +1,130 @@
+public static class DrawGlobals
+{
+    public static string ESC = "\x1b";
+    public static string CCLR = $"{ESC}[0;0m";
+    public static string CLR = $"{CCLR}{ESC}[H{ESC}[2J{ESC}[3J";
+}
+
 public class Color 
 {
-    public Color(string hex, int r, int g, int b)
+    public Color(string _hex, (int R, int G, int B) _rgb)
     {
-        red = r;
-        green = g;
-        blue = b;
-        hexCode = hex;
-        if (hexCode.Length >= 7)
+        rgb = _rgb;
+        hex = _hex;
+        color = "";
+        int R = _rgb.R;
+        int G = _rgb.G;
+        int B = _rgb.B;
+        if (hex.Length >= 7)
         {
-            hexCode = hexCode.Replace("#", "");
-            red = Convert.ToInt32($"0x{hexCode[0]}{hexCode[1]}", 16);
-            green = Convert.ToInt32($"0x{hexCode[2]}{hexCode[3]}", 16);
-            blue = Convert.ToInt32($"0x{hexCode[4]}{hexCode[5]}", 16);
+            hex = hex.Replace("#", "");
+            R = Convert.ToInt32($"0x{hex[0]}{hex[1]}", 16);
+            G = Convert.ToInt32($"0x{hex[2]}{hex[3]}", 16);
+            B = Convert.ToInt32($"0x{hex[4]}{hex[5]}", 16);
         }
+        rgb = (R, G, B);
+        color = $"{DrawGlobals.ESC}[38;2;{rgb.R};{rgb.G};{rgb.B}m";
     }
 
-    public int red { get; set; }
-    public int green { get; set; }
-    public int blue { get; set; }
-    public string hexCode { get; set; }
+    public (int R, int G, int B) rgb { get; set; }
+    public string hex { get; set; }
+    public string color;
 
     override public string ToString()
     {
-        return $"\x1b[38;2;{red};{green};{blue}m";
+        return color;
     }
 }
 
 public class Pixel
 {
-    public Pixel(char psym, string pcolorString, int pposX, int pposY)
+    public Pixel(char _sym, string _colorString, (int _X, int _Y) _pos)
     {
-        sym = psym;
-        colorString = pcolorString;
-        posX = pposX;
-        posY = pposY;
+        sym = _sym;
+        colorString = _colorString;
+        pos = _pos;
+        pixel = $"{colorString}{DrawGlobals.ESC}[{pos.Y};{pos.X}H{sym}";
     }
 
     public char sym { get; set; }
     public string colorString { get; set; }
-    public int posX { get; set; }
-    public int posY { get; set; }
+    public (int X, int Y) pos { get; set; }
+    public string pixel;
+
+    public void draw()
+    {
+        Console.Write(pixel);
+    }
 
     override public string ToString()
     {
-        return $"{colorString}\x1b[{posY};{posX}H{sym}";
-    }
-    public void draw()
-    {
-        Console.Write($"{colorString}\x1b[{posY};{posX}H{sym}");
+        return pixel;
     }
 }
 
 public class Rectangle
 {
-    public Rectangle(char rsym, string rcolorString, int rposX, int rposY, int rgeomX, int rgeomY)
+    public Rectangle(char _sym, string _colorString, (int _X, int _Y) _pos, (int _X, int _Y) _size, bool _fill)
     {
-        sym = rsym;
-        colorString = rcolorString;
-        posX = rposX;
-        posY = rposY;
-        geomX = rgeomX;
-        geomY = rgeomY;
+        sym = _sym;
+        colorString = _colorString;
+        pos = _pos;
+        size = _size;
+        fill = _fill;
+
+        rect = colorString;
+        string line = new string(sym, size.X);
+
+        if (fill)
+        {
+            for (int gy = 0; gy < size.Y; gy++)
+            {
+                rect += $"{DrawGlobals.ESC}[{pos.Y + gy};{pos.X}H{line}";
+            }
+        }
+        else
+        {
+            rect += $"{DrawGlobals.ESC}[{pos.Y};{pos.X}H{line}";
+            for (int gy = 0; gy < size.Y; gy++)
+            {
+                rect += $"{DrawGlobals.ESC}[{pos.Y + gy};{pos.X}H{sym}{DrawGlobals.ESC}[{pos.Y + gy};{pos.X+size.X-1}H{sym}";
+            }
+            rect += $"{DrawGlobals.ESC}[{pos.Y+size.Y-1};{pos.X}H{line}";
+        }
     }
 
     public char sym { get; set; }
     public string colorString { get; set; }
-    public int posX { get; set; }
-    public int posY { get; set; }
-    public int geomX { get; set; }
-    public int geomY { get; set; }
+    public (int X, int Y) pos { get; set; }
+    public (int X, int Y) size { get; set; }
+    public bool fill { get; set; }
+    public string rect;
 
     public void draw()
     {
-        string line = new string(sym, geomX);
-        string rect = colorString;
-        for (int gy = 0; gy < geomY; gy++)
-        {
-            rect += $"\x1b[{posY + gy};{posX}H{line}";
-        }
         Console.Write(rect);
     }
+
     override public string ToString()
     {
-        string line = new string(sym, geomX);
-        string rect = colorString;
-        for (int gy = 0; gy < geomY; gy++)
-        {
-            rect += $"\x1b[{posY + gy};{posX}H{line}";
-        }
         return rect;
     }
 }
 
 public class Ellipse
 {
-    public Ellipse(char esym, string ecolorString, int eposX, int eposY, int eradX, int eradY, bool efill)
+    public Ellipse(char _sym, string _colorString, (int _X, int _Y) _pos, (int _X, int _Y) _rad, bool _fill)
     {
-        sym = esym;
-        colorString = ecolorString;
-        posX = eposX;
-        posY = eposY;
-        radX = eradX;
-        radY = eradY;
-        fill = efill;
+        sym = _sym;
+        colorString = _colorString;
+        pos = _pos;
+        rad = _rad;
+        fill = _fill;
         ellipse = "";
+        int posX = pos.X;
+        int posY = pos.Y;
+        int radX = rad.X;
+        int radY = rad.Y;
         double dx, dy, d1, d2, x, y, powRadX, powRadY;
         powRadX = radX * radX;
         powRadY = radY * radY;
@@ -112,7 +133,7 @@ public class Ellipse
             for(y=-radY; y<=radY; y++) {
                 for(x=-radX; x<=radX; x++) {
                     if (x*x*radY*radY+y*y*radX*radX <= radY*radY*radX*radX) {
-                        ellipse += new Pixel(sym, colorString, (int)(posX + x), (int)(posY + y));
+                        ellipse += new Pixel(sym, colorString, ((int)(posX + x), (int)(posY + y)));
                     }
                 }
             }
@@ -126,10 +147,10 @@ public class Ellipse
 
         while (dx < dy)
         {
-            ellipse += new Pixel(sym, colorString, (int)(x + posX), (int)(y + posY));
-            ellipse += new Pixel(sym, colorString, (int)(-x + posX), (int)(y + posY));
-            ellipse += new Pixel(sym, colorString, (int)(x + posX), (int)(-y + posY));
-            ellipse += new Pixel(sym, colorString, (int)(-x + posX), (int)(-y + posY));
+            ellipse += new Pixel(sym, colorString, ((int)(x + posX), (int)(y + posY)));
+            ellipse += new Pixel(sym, colorString, ((int)(-x + posX), (int)(y + posY)));
+            ellipse += new Pixel(sym, colorString, ((int)(x + posX), (int)(-y + posY)));
+            ellipse += new Pixel(sym, colorString, ((int)(-x + posX), (int)(-y + posY)));
             if (d1 < 0)
             {
                 x++;
@@ -148,10 +169,10 @@ public class Ellipse
         d2 = powRadY * Math.Pow(x + 0.5f, 2) - powRadX * Math.Pow(y - 1, 2) - powRadX * powRadY;
         while (y >= 0)
         {
-            ellipse += new Pixel(sym, colorString, (int)(x + posX), (int)(y + posY));
-            ellipse += new Pixel(sym, colorString, (int)(-x + posX), (int)(y + posY));
-            ellipse += new Pixel(sym, colorString, (int)(x + posX), (int)(-y + posY));
-            ellipse += new Pixel(sym, colorString, (int)(-x + posX), (int)(-y + posY));
+            ellipse += new Pixel(sym, colorString, ((int)(x + posX), (int)(y + posY)));
+            ellipse += new Pixel(sym, colorString, ((int)(-x + posX), (int)(y + posY)));
+            ellipse += new Pixel(sym, colorString, ((int)(x + posX), (int)(-y + posY)));
+            ellipse += new Pixel(sym, colorString, ((int)(-x + posX), (int)(-y + posY)));
             if (d2 > 0)
             {
                 y--;
@@ -171,10 +192,8 @@ public class Ellipse
 
     public char sym { get; set; }
     public string colorString { get; set; }
-    public int posX { get; set; }
-    public int posY { get; set; }
-    public int radX { get; set; }
-    public int radY { get; set; }
+    public (int X, int Y) pos { get; set; }
+    public (int X, int Y) rad { get; set; }
     public bool fill { get; set; }
     public string ellipse;
     public void draw()
@@ -189,106 +208,70 @@ public class Ellipse
 
 public class Line
 {
-    public Line(char lsym, string lcolorString, int lx0, int ly0, int lx1, int ly1)
+    public Line(char _sym, string _colorString, (int _X, int _Y) _pos1, (int _X, int _Y) _pos2)
     {
-        sym = lsym;
-        colorString = lcolorString;
-        x0 = lx0;
-        y0 = ly0;
-        x1 = lx1;
-        y1 = ly1;
+        sym = _sym;
+        colorString = _colorString;
+        pos1 = _pos1;
+        pos2 = _pos2;
+        line = "";
+
+        int pos1X = pos1.X;
+        int pos1Y = pos1.Y;
+        int pos2X = pos2.X;
+        int pos2Y = pos2.Y;
+        int x, y, dX, dY, error, steepY;
+        bool steep;
+        
+        steep = Math.Abs(pos2Y - pos1Y) > Math.Abs(pos2X - pos1X);
+        if (steep) 
+        {
+            var temp = pos1X;
+            pos1X = pos1Y;
+            pos1Y = temp;
+            temp = pos2X;
+            pos2X = pos1Y;
+            pos1Y = temp;
+        }
+        if (pos1X > pos2X) 
+        {
+            var temp = pos1X;
+            pos1X = pos1Y;
+            pos1Y = temp;
+            temp = pos2X;
+            pos2X = pos1Y;
+            pos1Y = temp;
+        }
+        dX = pos2X - pos1X;
+        dY = Math.Abs(pos2Y - pos1Y);
+        steepY = pos1Y < pos2Y ? 1 : -1;
+        y = pos1Y;
+        error = dX / 2;
+        for (x = pos1X; x <= pos2X; x++)
+        {
+            line += new Pixel(sym, colorString, (steep ? y : x, steep ? x : y));
+            error -= dY;
+            if (error < 0)
+            {
+                y += steepY;
+                error += dX;
+            }
+        }
     }
 
     public char sym { get; set; }
     public string colorString { get; set; }
-    public int x0 { get; set; }
-    public int y0 { get; set; }
-    public int x1 { get; set; }
-    public int y1 { get; set; }
+    public (int X, int Y) pos1 { get; set; }
+    public (int X, int Y) pos2 { get; set; }
+    public string line;
+
+    public void draw()
+    {
+        Console.Write(line);
+    }
 
     override public string ToString()
     {
-        int x, y, dX, dY, error, steepY;
-        bool steep;
-        string line = "";
-        steep = Math.Abs(y1 - y0) > Math.Abs(x1 - x0);
-        if (steep) 
-        {
-            var temp = x0;
-            x0 = y0;
-            y0 = temp;
-            temp = x1;
-            x1 = y0;
-            y0 = temp;
-        }
-        if (x0 > x1) 
-        {
-            var temp = x0;
-            x0 = y0;
-            y0 = temp;
-            temp = x1;
-            x1 = y0;
-            y0 = temp;
-        }
-        dX = x1 - x0;
-        dY = Math.Abs(y1 - y0);
-        steepY = y0 < y1 ? 1 : -1;
-        y = y0;
-        error = dX / 2;
-        for (x = x0; x <= x1; x++)
-        {
-            line += new Pixel(sym, colorString, steep ? y : x, steep ? x : y);
-            error -= dY;
-            if (error < 0)
-            {
-                y += steepY;
-                error += dX;
-            }
-        }
         return line;
-    }
-    public void draw()
-    {
-        int x, y, dX, dY, error, steepY;
-        bool steep;
-        Pixel pix = new Pixel(sym, colorString, 0,0);
-        string line = "";
-        steep = Math.Abs(y1 - y0) > Math.Abs(x1 - x0);
-        if (steep) 
-        {
-            var temp = x0;
-            x0 = y0;
-            y0 = temp;
-            temp = x1;
-            x1 = y0;
-            y0 = temp;
-        }
-        if (x0 > x1) 
-        {
-            var temp = x0;
-            x0 = y0;
-            y0 = temp;
-            temp = x1;
-            x1 = y0;
-            y0 = temp;
-        }
-        dX = x1 - x0;
-        dY = Math.Abs(y1 - y0);
-        steepY = y0 < y1 ? 1 : -1;
-        y = y0;
-        error = dX / 2;
-        for (x = x0; x <= x1; x++)
-        {
-            pix.posX = steep ? y : x;
-            pix.posY = steep ? x : y;
-            line += pix;
-            error -= dY;
-            if (error < 0)
-            {
-                y += steepY;
-                error += dX;
-            }
-        }
-    Console.Write(line);
     }
 }

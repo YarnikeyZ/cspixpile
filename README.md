@@ -10,7 +10,4 @@
 6. *Editable "Globals" in DrawGlobals class*, such as: *CLR* to clear the screen, *CCLR* to clear the color settings, *ESC* to change the ANSI ESC code if you are having trouble displaying the color and moving the cursor
 
 ## You can't draw nothing (almost everything)
-1. *Color class* is only for foreground
-2. No function dedicated to *cursor movement*
-3. Bad drawing algorithms in some cases
-4. Can't detect collision unlike counterpart in Python3
+1. Bad drawing algorithms in some cases

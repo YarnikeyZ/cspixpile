@@ -1,56 +1,63 @@
-using static CSpixpile;
+﻿using System;
+using System.Threading;
+using static cspixpile.Draw;
+using PInvoke;
 
-void showDemo(double fps = 25) {
-    // Terminal size
-    (int X, int Y) term = (Console.WindowWidth, Console.WindowHeight);
-
-    // Colors
-    Color clrBlack  = new ("#000000", (0, 0, 0));
-    Color clrRed    = new ("#ff0000", (0, 0, 0));
-    Color clrLBlue  = new ("#13a2e9", (0, 0, 0));
-    Color clrDBlue  = new ("#0000ff", (0, 0, 0));
-    Color clrGreen  = new ("#0cd205", (0, 0, 0));
-    Color clrOrange = new ("#de8500", (0, 0, 0));
-    Color clrYellow = new ("#ffff00", (0, 0, 0));
-
-    // Picture
-    Console.Write(DrawGlobals.CLR);
-    string pic = "";
-
-    pic += new Rectangle('@', clrLBlue , clrLBlue , (0, 0), (term.X, term.Y), true);
-    pic += new Rectangle('g', clrGreen , clrGreen , (0, term.Y-7), (term.X, 7), true);
-
-    pic += new Rectangle('h', clrOrange, clrOrange, (term.X-23, term.Y-13), (21, 10), true);
-    pic += new Rectangle('d', clrRed   , clrRed   , (term.X-21, term.Y-9 ), (5 , 6 ), true);
-    pic += new Rectangle('h', clrYellow, clrYellow, (term.X-18, term.Y-7 ), (1 , 2 ), true);
-    pic += new Rectangle('w', clrYellow, clrYellow, (term.X-14, term.Y-10), (10, 5 ), true);
-    pic += new Rectangle('f', clrOrange, clrOrange, (term.X-10, term.Y-10), (2 , 5 ), true);
-    pic += new Rectangle('f', clrOrange, clrOrange, (term.X-14, term.Y-8 ), (10, 1 ), true);
-
-    pic += new Line     ('r', clrRed   , clrRed   , (term.X-24, term.Y-12), (term.X-13, term.Y-18));
-    pic += new Line     ('r', clrRed   , clrRed   , (term.X-13, term.Y-18), (term.X-2 , term.Y-12));
-    pic += new Line     ('r', clrRed   , clrRed   , (term.X-24, term.Y-12), (term.X-2 , term.Y-12));
-    pic += new Line     ('r', clrRed   , clrRed   , (term.X-21, term.Y-13), (term.X-5 , term.Y-13));
-    pic += new Line     ('r', clrRed   , clrRed   , (term.X-19, term.Y-14), (term.X-7 , term.Y-14));
-    pic += new Line     ('r', clrRed   , clrRed   , (term.X-17, term.Y-15), (term.X-9 , term.Y-15));
-    pic += new Line     ('r', clrRed   , clrRed   , (term.X-15, term.Y-16), (term.X-11, term.Y-16));
-
-    pic += new Pixel    ('r', clrRed   , clrRed   , (term.X-13, term.Y-17));
-
-    pic += new Ellipse  ('l', clrDBlue , clrDBlue , (20, term.Y-4), (15, 2), true);
-    pic += new Ellipse  ('s', clrYellow, clrYellow, (16, 7), (10, 5), true);
-    
-    pic += DrawGlobals.CCLR+MoveCursor(term);
-    
-    // Output
-    if (fps > 0)
+namespace Demo
+{
+    internal class Demo
     {
-        while (fps>0) { Console.Write(pic); Thread.Sleep((int)(1000/fps)); }
-    }
-    else
-    {
-        Console.Write(pic);
+
+        static void showPicture(int X, int Y, Color sky, Color grass, Color houseWalls, Color houseDoor, Color houseDoorHandle, Color houseWindow, Color houseRoof, Color lake, Color sun)
+        {
+            Console.Write(DrawGlobals.CCLR + DrawGlobals.CLR + MoveCursor((X, Y)));
+
+            Console.Write(new Rectangle('@', sky            , sky            , (0, 0    )      , (X, Y  ), true));
+            Console.Write(new Rectangle('g', grass          , grass          , (0, Y - 7)      , (X, 7  ), true));
+
+            Console.Write(new Rectangle('h', houseWalls     , houseWalls     , (X - 23, Y - 13), (21, 10), true));
+            Console.Write(new Rectangle('d', houseDoor      , houseDoor      , (X - 21, Y - 9 ), (5 , 6 ), true));
+            Console.Write(new Rectangle('h', houseDoorHandle, houseDoorHandle, (X - 18, Y - 7 ), (1 , 2 ), true));
+            Console.Write(new Rectangle('w', houseWindow    , houseWindow    , (X - 14, Y - 10), (10, 5 ), true));
+            Console.Write(new Rectangle('f', houseWalls     , houseWalls     , (X - 10, Y - 10), (2 , 5 ), true));
+            Console.Write(new Rectangle('f', houseWalls     , houseWalls     , (X - 14, Y - 8 ), (10, 1 ), true));
+
+            Console.Write(new Line     ('r', houseRoof      , houseRoof      , (X - 24, Y - 12), (X - 13, Y - 18)));
+            Console.Write(new Line     ('r', houseRoof      , houseRoof      , (X - 13, Y - 18), (X - 2 , Y - 12)));
+            Console.Write(new Line     ('r', houseRoof      , houseRoof      , (X - 24, Y - 12), (X - 2 , Y - 12)));
+            Console.Write(new Line     ('r', houseRoof      , houseRoof      , (X - 21, Y - 13), (X - 5 , Y - 13)));
+            Console.Write(new Line     ('r', houseRoof      , houseRoof      , (X - 19, Y - 14), (X - 7 , Y - 14)));
+            Console.Write(new Line     ('r', houseRoof      , houseRoof      , (X - 17, Y - 15), (X - 9 , Y - 15)));
+            Console.Write(new Line     ('r', houseRoof      , houseRoof      , (X - 15, Y - 16), (X - 11, Y - 16)));
+
+            Console.Write(new Pixel    ('r', houseRoof      , houseRoof      , (X - 13, Y - 17)));
+
+            Console.Write(new Ellipse  ('l', lake           , lake           , (20, Y - 4), (15, 2), true));
+            Console.Write(new Ellipse  ('s', sun            , sun            , (16, 7    ), (10, 5), true));
+
+            Thread.Sleep(5000);
+        }
+
+        static void Main(string[] args)
+        {
+            //Run the library
+            TryEnableAnsiCodesForHandle(Kernel32.StdHandle.STD_OUTPUT_HANDLE);
+
+            // Terminal size
+            (int X, int Y) = (Console.WindowWidth, Console.WindowHeight);
+
+            // Colors
+            Color clrBlack  = new Color("#000000", (0, 0, 0), false);
+            Color clrRed    = new Color("#ff0000", (0, 0, 0), false);
+            Color clrLBlue  = new Color("#13a2e9", (0, 0, 0), false);
+            Color clrDBlue  = new Color("#0000ff", (0, 0, 0), false);
+            Color clrGreen  = new Color("#0cd205", (0, 0, 0), false);
+            Color clrOrange = new Color("#de8500", (0, 0, 0), false);
+            Color clrYellow = new Color("#ffff00", (0, 0, 0), false);
+
+            showPicture(X, Y, clrLBlue, clrGreen, clrOrange, clrRed, clrYellow, clrYellow, clrRed, clrDBlue, clrYellow);
+
+            Console.ReadKey();
+        }
     }
 }
-
-showDemo(0);
